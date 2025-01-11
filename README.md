@@ -1,2 +1,2 @@
 # Irisdata
-exploring Iris data with  - Analysis - Clustering -PCA - K-Means
+Exploring Iris data from the Sklearn library  - Analysis - Clustering -PCA - K-Means
