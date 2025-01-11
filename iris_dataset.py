@@ -41,7 +41,7 @@ def load_cancer_data():
 # Streamlit UI layout
 def app():
     # Title of the app
-    st.title("Interactive ML with Streamlit & Plotly")
+    st.title("Interactive ML with Multiple Datases from sklearn")
 
     # Left Pane for Dataset and Task Selection
     st.sidebar.header("Select Dataset and Task")
