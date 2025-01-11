@@ -1,5 +1,4 @@
-
-# Author: SP
+# Author : SP
 
 import streamlit as st
 import pandas as pd
@@ -19,57 +18,78 @@ def load_iris_data():
     df['species'] = iris.target_names[iris.target]
     return df, iris
 
-# creating the function for the Streamlit UI layout
+# Loading the  Wine dataset
+
+def load_wine_data():
+    wine = datasets.load_wine()
+    df = pd.DataFrame(wine.data, columns=wine.feature_names)
+    df['class'] = wine.target_names[wine.target]
+    return df, wine
+
+# Loading the Digits dataset
+def load_digits_data():
+    digits = datasets.load_digits()
+    df = pd.DataFrame(digits.data)
+    df['target'] = digits.target
+    return df, digits
+
+# Load Breast Cancer dataset
+def load_cancer_data():
+    cancer = datasets.load_breast_cancer()
+    df = pd.DataFrame(cancer.data, columns=cancer.feature_names)
+    df['target'] = cancer.target
+    return df, cancer
+
+# Building the Streamlit UI layout
 
 def app():
     # Title of the app
-    
     st.title("Interactive ML with Streamlit & Plotly")
 
     # Left Pane for Dataset and Task Selection
-    
     st.sidebar.header("Select Dataset and Task")
 
-    # Select Dataset (currently only Iris dataset)
-    
-    dataset = st.sidebar.selectbox("Select Dataset", ["Iris"])
+    # Select Dataset
+    dataset_options = ["Iris", "Wine", "Digits", "Breast Cancer"]
+    dataset = st.sidebar.selectbox("Select Dataset", dataset_options)
 
-    # Select Task (EDA, Classification, Clustering, Dimensionality Reduction)
-    
+    # Select Task
     task = st.sidebar.selectbox("Select Task", ["EDA", "Classification", "Clustering", "Dimensionality Reduction", "Model Evaluation"])
 
-    # Load Dataset (for now, only Iris)
-    
+    # Load Dataset based on user selection
     if dataset == "Iris":
-        df, iris = load_iris_data()
+        df, data = load_iris_data()
+    elif dataset == "Wine":
+        df, data = load_wine_data()
+    elif dataset == "Digits":
+        df, data = load_digits_data()
+    elif dataset == "Breast Cancer":
+        df, data = load_cancer_data()
 
     # Display dataset overview in main area
-    
     st.write(f"### {dataset} Dataset")
     st.write("Here is a preview of the dataset:")
     st.write(df.head())
 
     # Task-based functionalities
-    
     if task == "EDA":
         st.header("Exploratory Data Analysis (EDA)")
         # Pairplot for visualization (using Plotly)
         st.subheader("Pairplot of features")
-        fig = px.scatter_matrix(df, dimensions=iris.feature_names, color="species", title="Iris Dataset Pairplot")
+        fig = px.scatter_matrix(df, dimensions=data.feature_names, color="species" if dataset != "Digits" and dataset != "Breast Cancer" else "target", title=f"{dataset} Dataset Pairplot")
         st.plotly_chart(fig)
 
         # Correlation Heatmap using Plotly
-        
         st.subheader("Correlation Heatmap")
-        corr_matrix = df.drop('species', axis=1).corr()
+        corr_matrix = df.drop('species', axis=1, errors='ignore').corr()
         fig = px.imshow(corr_matrix, text_auto=True, title="Correlation Heatmap")
         st.plotly_chart(fig)
 
     elif task == "Classification":
         st.header("Classification (K-Nearest Neighbors)")
         # Prepare data
-        X = iris.data
-        y = iris.target
+        X = data.data
+        y = data.target
 
         # Split data into train/test
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -90,35 +110,33 @@ def app():
     elif task == "Clustering":
         st.header("Clustering (K-Means)")
         # Prepare data
-        X = iris.data
+        X = data.data
 
         # Apply K-Means clustering
-        
-        kmeans = KMeans(n_clusters=3, random_state=42)
+        kmeans = KMeans(n_clusters=len(set(data.target)), random_state=42)
         clusters = kmeans.fit_predict(X)
 
         # Display results using Plotly scatter plot
-        
         st.subheader("K-Means Clustering Result")
-        fig = px.scatter(x=X[:, 0], y=X[:, 1], color=clusters, labels={'x': 'Sepal Length', 'y': 'Sepal Width'}, title="K-Means Clustering of Iris Dataset")
+        fig = px.scatter(x=X[:, 0], y=X[:, 1], color=clusters, labels={'x': 'Feature 1', 'y': 'Feature 2'}, title=f"K-Means Clustering of {dataset} Dataset")
         st.plotly_chart(fig)
 
     elif task == "Dimensionality Reduction":
         st.header("Dimensionality Reduction (PCA)")
         # Apply PCA to reduce to 2D
         pca = PCA(n_components=2)
-        X_pca = pca.fit_transform(iris.data)
+        X_pca = pca.fit_transform(data.data)
 
         # Display results using Plotly scatter plot
         st.subheader("PCA Result (2D)")
-        fig = px.scatter(x=X_pca[:, 0], y=X_pca[:, 1], color=iris.target, labels={'x': 'Principal Component 1', 'y': 'Principal Component 2'}, title="PCA of Iris Dataset")
+        fig = px.scatter(x=X_pca[:, 0], y=X_pca[:, 1], color=data.target, labels={'x': 'Principal Component 1', 'y': 'Principal Component 2'}, title=f"PCA of {dataset} Dataset")
         st.plotly_chart(fig)
 
     elif task == "Model Evaluation":
         st.header("Model Evaluation")
         # Prepare data
-        X = iris.data
-        y = iris.target
+        X = data.data
+        y = data.target
 
         # Split data into train/test
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
