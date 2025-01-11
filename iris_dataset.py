@@ -10,23 +10,21 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-# Loading the Iris dataset
-
+# Load Iris dataset
 def load_iris_data():
     iris = datasets.load_iris()
     df = pd.DataFrame(iris.data, columns=iris.feature_names)
     df['species'] = iris.target_names[iris.target]
     return df, iris
 
-# Loading the  Wine dataset
-
+# Load Wine dataset
 def load_wine_data():
     wine = datasets.load_wine()
     df = pd.DataFrame(wine.data, columns=wine.feature_names)
     df['class'] = wine.target_names[wine.target]
     return df, wine
 
-# Loading the Digits dataset
+# Load Digits dataset
 def load_digits_data():
     digits = datasets.load_digits()
     df = pd.DataFrame(digits.data)
@@ -40,8 +38,7 @@ def load_cancer_data():
     df['target'] = cancer.target
     return df, cancer
 
-# Building the Streamlit UI layout
-
+# Streamlit UI layout
 def app():
     # Title of the app
     st.title("Interactive ML with Streamlit & Plotly")
@@ -74,16 +71,22 @@ def app():
     # Task-based functionalities
     if task == "EDA":
         st.header("Exploratory Data Analysis (EDA)")
-        # Pairplot for visualization (using Plotly)
-        st.subheader("Pairplot of features")
-        fig = px.scatter_matrix(df, dimensions=data.feature_names, color="species" if dataset != "Digits" and dataset != "Breast Cancer" else "target", title=f"{dataset} Dataset Pairplot")
-        st.plotly_chart(fig)
 
-        # Correlation Heatmap using Plotly
-        st.subheader("Correlation Heatmap")
-        corr_matrix = df.drop('species', axis=1, errors='ignore').corr()
-        fig = px.imshow(corr_matrix, text_auto=True, title="Correlation Heatmap")
-        st.plotly_chart(fig)
+        # Matrix plot (correlation heatmap or scatter matrix)
+        plot_type = st.selectbox("Select Plot Type", ["Correlation Heatmap", "Pairwise Scatter Matrix"])
+
+        if plot_type == "Correlation Heatmap":
+            st.subheader("Correlation Heatmap")
+            # Calculate the correlation matrix (drop non-numeric columns like 'target' or 'species')
+            corr_matrix = df.drop('species', axis=1, errors='ignore').drop('target', axis=1, errors='ignore').corr()
+            fig = px.imshow(corr_matrix, text_auto=True, title="Correlation Heatmap")
+            st.plotly_chart(fig)
+
+        elif plot_type == "Pairwise Scatter Matrix":
+            st.subheader("Pairwise Scatter Matrix")
+            # Generate pairwise scatter matrix
+            fig = px.scatter_matrix(df, dimensions=df.columns[:-1], color="species" if dataset != "Digits" and dataset != "Breast Cancer" else "target", title=f"{dataset} Dataset Pairwise Scatter Matrix")
+            st.plotly_chart(fig)
 
     elif task == "Classification":
         st.header("Classification (K-Nearest Neighbors)")
